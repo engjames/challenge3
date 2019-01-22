@@ -78,9 +78,8 @@ class Incident(MethodView):
     @token_required
     def post(current_user, self):
         """
-        Method for creating the new incident
+        Method for creating the new incident record
         """
-
         if request.content_type == 'application/json':
             post_data = request.get_json()
             title = post_data.get('title')
@@ -88,7 +87,6 @@ class Incident(MethodView):
             comment = post_data.get('comment')
             location = post_data.get('location')
     
-            
             if isinstance(category,str) and isinstance(comment,str) and isinstance(location,str) and isinstance(title,str):
                 cur = conn.cursor()
                 sql1 = """
@@ -102,7 +100,7 @@ class Incident(MethodView):
                     CreateRecord(user_id, title, category, comment, location).save()
                     return response('success', 'Incident created successfully', 201)
                 return response('failed', 'Failed, Incident already exists, Please wait as they work on it', 400)
-            return response('failed', 'Category, comment and location should be a string', 400)
+            return response('failed', 'Category, comment, title and location should be a string', 400)
         return response('failed', 'Content-type must be json', 202)                   
 
     @token_required   
