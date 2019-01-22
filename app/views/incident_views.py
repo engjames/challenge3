@@ -21,8 +21,9 @@ class Incident(MethodView):
         cur = conn.cursor()
         cur.execute(sql,(current_user,))
         user_record = cur.fetchone()
+        currentuser = current_user
         user_type= user_record[0]
-        if user_type == "true":
+        if user_type == "true" and :
             if incident_id is None:
                 cur = conn.cursor()
                 sql = """
