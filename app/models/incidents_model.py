@@ -17,7 +17,6 @@ class CreateRecord():
                     ON UPDATE CASCADE ON DELETE CASCADE
             )
             """)
-            
     def __init__(self, user_id, title, category, comment, location):
         self.user_id = user_id
         self.title = title 
@@ -42,6 +41,16 @@ class CreateRecord():
             """
         cur.execute(sql,(status,incident_id,))
         conn.commit()
+
+    @staticmethod
+    def delete(user_id,incident_id):
+        cur = conn.cursor()
+        sql2 = """
+            DELETE FROM incidents WHERE createdby=%s AND incident_id=%s 
+        """
+        cur.execute(sql2,(user_id, incident_id))
+        conn.commit()
+
     @staticmethod
     def get_by_name(user_id,title):
         """
