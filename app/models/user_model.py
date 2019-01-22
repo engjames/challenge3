@@ -2,13 +2,16 @@ import datetime
 import jwt
 from app import app, conn,bcrypt
 
+#establish a connection between our apllication and the database
 cur = conn.cursor()
 
 
+#User modal. this will be use as a template for creating objects of this class
 class User:
     """
     Table schema
     """
+    #lets create a users table if it doesnt exist
     cur.execute('''CREATE TABLE IF NOT EXISTS users
             ( user_id SERIAL PRIMARY KEY    NOT NULL,
             firstname         VARCHAR(255)     NOT NULL,
@@ -18,6 +21,7 @@ class User:
             isAdmin           VARCHAR(255)     NOT NULL,           
             registered_on     DATE     NOT NULL );''')
 
+    #this constructor is called each time we create a new user
     def __init__(self, firstname, lastname, email, password, isAdmin):
         self.firstname = firstname
         self.lastname = lastname
@@ -26,6 +30,7 @@ class User:
         self.isAdmin = isAdmin
         self.registered_on = str(datetime.datetime.now())
 
+    #this saves users info into the database
     def save(self):
         """
         Persist the user in the database
@@ -39,6 +44,8 @@ class User:
         """
         cur.execute(sql,(self.firstname, self.lastname, self.email, self.password, self.isAdmin, self.registered_on,))
         conn.commit()
+
+    #statics methods donot require to first create an instance of a class t use them
 
     @staticmethod
     def get_by_email(user_email):
@@ -55,6 +62,7 @@ class User:
         user = cur.fetchone()
         return user
 
+    #This method is for generating a token
     @staticmethod
     def encode_auth_token(user_id):
         """
@@ -62,6 +70,11 @@ class User:
         :param user_id: User's Id
         :return:
         """
+        #the token will contatins the data we want to encrypt, the expiration date, 
+        # the key we're going to use to encrypt it, and the method we're to use
+        
+        # sub refers to the data to be encrypted
+        # secret key is the key we use t encrypt the data 
         try:
             payload = {
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days = 1),
@@ -75,6 +88,7 @@ class User:
         except Exception as e:
             return e
 
+    #this method is used to decode our token
     @staticmethod
     def decode_auth_token(token):
         """
@@ -82,9 +96,14 @@ class User:
         :param token: Auth Token
         :return:
         """
+        
         try:
+            #to decode the token, u need to pass the token to be decoded, the key u used to encrypt it, and the method to use to decode it
             payload = jwt.decode(token, app.config['SECRET_KEY'],algorithms='HS256')
+
+            #All tokens that have expired are stored in ablacklisted token sothat they are not used again
             is_token_blacklisted = BlackListToken.check_blacklist(token)
+            #check if provided token to be decoded is among the blacklisted ones
             if is_token_blacklisted:
                 return 'Token was Blacklisted, Please login In'
             return payload['sub']
@@ -137,4 +156,3 @@ class BlackListToken:
         if response:
             return True
         return False
-        
