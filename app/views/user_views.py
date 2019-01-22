@@ -5,6 +5,7 @@ from app import bcrypt, conn
 from app.models.user_model import User
 from app.views.helper import response, response_auth,token_required
 
+
 class RegisterUser(MethodView):
     """
     View function to register a user 
@@ -60,6 +61,7 @@ class LoginUser(MethodView):
                 return response('failed', 'User does not exist or password is incorrect', 401)
             return response('failed', 'Missing or wrong email format or password is less than five characters', 401)
         return response('failed', 'Content-type must be json', 202)
+
 
 class GetAuthUrls:
     @staticmethod

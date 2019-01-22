@@ -4,11 +4,11 @@ from app import app, conn,bcrypt
 
 cur = conn.cursor()
 
+
 class User:
     """
     Table schema
     """
-
     cur.execute('''CREATE TABLE IF NOT EXISTS users
             ( user_id SERIAL PRIMARY KEY    NOT NULL,
             firstname         VARCHAR(255)     NOT NULL,
