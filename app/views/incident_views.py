@@ -21,8 +21,9 @@ class Incident(MethodView):
         cur = conn.cursor()
         cur.execute(sql,(current_user,))
         user_record = cur.fetchone()
+        currentuser = current_user
         user_type= user_record[0]
-        if user_type == "true":
+        if user_type == "true" and :
             if incident_id is None:
                 cur = conn.cursor()
                 sql = """
@@ -43,7 +44,6 @@ class Incident(MethodView):
                             'createdOn':row[7]
                         }
                         all_incidents.append(incident)
-
                     return response_for_user_incidents('success', all_incidents, 200)
                 return response('success', "There exists no incidents", 200)
             
