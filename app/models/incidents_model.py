@@ -17,6 +17,7 @@ class CreateRecord():
                     ON UPDATE CASCADE ON DELETE CASCADE
             )
             """)
+            
     def __init__(self, user_id, title, category, comment, location):
         self.user_id = user_id
         self.title = title 
