@@ -41,7 +41,8 @@ class Incident(MethodView):
                     for row in rows:
                         incident = {
                             'incident_id': row[0],
-                            'user_id': row[1],
+                            'createdby': row[1],
+                            'category':row[2],
                             'title':row[3],
                             'comment':row[4],
                             'location':row[5],
@@ -75,10 +76,11 @@ class Incident(MethodView):
                         'incident_id': row[0],
                         'user_id': row[1],
                         'category':row[2],
-                        'comment':row[3],
-                        'location':row[4],
-                        'status':row[5],
-                        'createdOn':row[6]
+                        'title':row[3],
+                        'comment':row[4],
+                        'location':row[5],
+                        'status':row[6],
+                        'createdOn':row[7]
                     }
 
                 return response_for_user_incidents('success', user_incident, 200)
@@ -122,9 +124,54 @@ class Incident(MethodView):
             return response('failed', 'Category, comment and location should be a string', 400)
         return response('failed', 'Content-type must be json', 202)                   
 
-    # @token_required   
-    # def put(current_user, self, incident_id):
-    #     pass
+    @token_required   
+    def put(current_user, self, incident_id):
+        """
+        Method for the location
+        """
+        #lets check if it is a valid id
+        try:
+            int(incident_id)
+        #if we can't convert it to an integer, let's return the exception message below
+        except ValueError:
+            return response('failed', 'Please provide a valid Incident Id', 400)
+        
+        if 'location' not in request.json:
+            return jsonify({"status": 400, "data":[{"error-message" : "wrong body format. follow this example ->> {'location':'[8.9090,56.2200]'}"}]})
+        
+        if not isinstance(request.json['location'], str):
+            return jsonify({"status":400, "data": [{"error-message" : "Location must a string"}]})
+
+        cur = conn.cursor()
+        sql1 = """
+            SELECT user_id FROM users WHERE email=%s 
+        """
+        cur.execute(sql1,(current_user,))
+        user = cur.fetchone()
+        #get users id w/c is in position 0 of the returned list
+        user_id = user[0]
+
+        #check for the record matching the user's id and incident id
+        cur = conn.cursor()
+        sql2 = """
+            SELECT * FROM incidents WHERE createdby=%s AND incident_id=%s 
+        """
+        cur.execute(sql2,(user_id, int(incident_id)))
+        incident_record = cur.fetchone()
+        
+        #if there is no matching record
+        if not incident_record:
+            return jsonify({"status":404, "data": [{"error-message" : "No intervention record found with this id"}]})
+        
+        #we can not delete a record with statuses of 'under investigation','rejected','resolved'
+        #get the status which is in position 6 of the returned list
+        status = incident_record[6]
+        if status in ['under investigation','rejected','resolved']:
+            return jsonify({"status":400, "data": [{"error-message" : "You can no longer edit or delete this intervention"}]})
+        #call a method under create record that deletes the record. it takes in the users id and incident id
+        CreateRecord.update_location(user_id, int(incident_id), location=request.json['location'])
+        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
+        
 
     @token_required
     def delete(current_user,self, incident_id):
@@ -165,15 +212,133 @@ class Incident(MethodView):
         CreateRecord.delete(user_id,int(incident_id))
         return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Intervention record has been deleted"}]})
 
+
+class InterventionComment(MethodView):
+    @token_required   
+    def put(current_user, self, incident_id):
+        """
+        Method for the status
+        """
+        #lets check if it is a valid id
+        try:
+            int(incident_id)
+        #if we can't convert it to an integer, let's return the exception message below
+        except ValueError:
+            return response('failed', 'Please provide a valid Incident Id', 400)
+        
+        if 'comment' not in request.json:
+            return jsonify({"status": 400, "data":[{"error-message" : "wrong body format. follow this example ->> {'comment':'Repair roads'}"}]})
+        
+        if not isinstance(request.json['comment'], str):
+            return jsonify({"status":400, "data": [{"error-message" : "Comment must a string"}]})
+
+        cur = conn.cursor()
+        sql1 = """
+            SELECT user_id FROM users WHERE email=%s 
+        """
+        cur.execute(sql1,(current_user,))
+        user = cur.fetchone()
+        #get users id w/c is in position 0 of the returned list
+        user_id = user[0]
+
+        #check for the record matching the user's id and incident id
+        cur = conn.cursor()
+        sql2 = """
+            SELECT * FROM incidents WHERE createdby=%s AND incident_id=%s 
+        """
+        cur.execute(sql2,(user_id, int(incident_id)))
+        incident_record = cur.fetchone()
+        
+        #if there is no matching record
+        if not incident_record:
+            return jsonify({"status":404, "data": [{"error-message" : "No intervention record found with this id"}]})
+        
+        #we can not delete a record with statuses of 'under investigation','rejected','resolved'
+        #get the status which is in position 6 of the returned list
+        status = incident_record[6]
+        if status in ['under investigation','rejected','resolved']:
+            return jsonify({"status":400, "data": [{"error-message" : "You can no longer edit or delete this intervention"}]})
+        #call a method under create record that deletes the record. it takes in the users id and incident id
+        CreateRecord.update_comment(user_id, int(incident_id), comment=request.json['comment'])
+        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s comment"}]})
+
+class InterventionStatus(MethodView):
+    
+    @token_required   
+    def put(current_user, self, incident_id):
+        """
+        Method for the status
+        """
+        #It's only the admin that can execute this endpoint. lets use the enail to get the user type
+        sql = """SELECT isadmin FROM users WHERE email=%s"""
+        cur = conn.cursor()
+        cur.execute(sql,(current_user,))
+        user_record = cur.fetchone()
+        user_type= user_record[0]
+        #verify if isAdmin is true
+        if not user_type == "true":
+            return response('failed', 'Sorry, this request requires administrative privileges to run', 401)    
+
+        #lets check if it is a valid id
+        try:
+            int(incident_id)
+        #if we can't convert it to an integer, let's return the exception message below
+        except ValueError:
+            return response('failed', 'Please provide a valid Incident Id', 400)
+        
+        if 'status' not in request.json:
+            return jsonify({"status": 400, "data":[{"error-message" : "wrong body format. follow this example ->> {'status':'Resolved'}"}]})
+        
+        if not isinstance(request.json['status'], str):
+            return jsonify({"status":400, "data": [{"error-message" : "Status must a string"}]})
+
+        cur = conn.cursor()
+        sql1 = """
+            SELECT user_id FROM users WHERE email=%s 
+        """
+        cur.execute(sql1,(current_user,))
+        user = cur.fetchone()
+        #get users id w/c is in position 0 of the returned list
+        user_id = user[0]
+
+        #check for the record matching the user's id and incident id
+        cur = conn.cursor()
+        sql2 = """
+            SELECT * FROM incidents WHERE incident_id=%s 
+        """
+        id = int(incident_id)
+        cur.execute(sql2,(id,))
+        incident_record = cur.fetchone()
+        
+        #if there is no matching record
+        if not incident_record:
+            return jsonify({"status":404, "data": [{"error-message" : "No intervention record found with this id"}]})
+        
+        #we can not delete a record with statuses of 'under investigation','rejected','resolved'
+        #get the status which is in position 6 of the returned list
+        status = request.json['status']
+        if status.lower() not in ['under investigation','rejected','resolved']:
+            return jsonify({"status":400, "data": [{"error-message" : "The status can either be 'under investigation', 'rejected', or 'resolved'"}]})
+        #call a method under create record that deletes the record. it takes in the users id and incident id
+        CreateRecord.update_status(user_id, int(incident_id), status)
+        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s status"}]})
+
+
+
 #generating routes for our endpoints
 class GetIncidentUrls:
     @staticmethod
     def fetch_urls(app):
         # Register classes as view methods so that we can tell if we're working with a post or put or delete or put
         incident_view = Incident.as_view('incident_api')
+        edit_comment_view = InterventionComment.as_view('edit_comment')
+        update_status_view = InterventionStatus.as_view('edit_status')
+
         app.add_url_rule('/incidents', defaults={'incident_id': None},
                          view_func=incident_view, methods=['GET',])
-        app.add_url_rule('/users/incidents', view_func=incident_view, methods=['POST',])
-        app.add_url_rule('/incidents/<incident_id>', view_func=incident_view, methods=['GET', 'PUT', 'DELETE',])
-        app.add_url_rule('/admin/incidents/<incident_id>', view_func=incident_view, methods=['PUT',])
+        app.add_url_rule('/incidents', view_func=incident_view, methods=['POST',])
+        app.add_url_rule('/incidents/<incident_id>', view_func=incident_view, methods=['GET', 'DELETE',])
+        app.add_url_rule('/interventions/<incident_id>/location', view_func=incident_view, methods=['PUT',])
+        app.add_url_rule('/interventions/<incident_id>/comment', view_func=edit_comment_view, methods=['PUT',])
+        app.add_url_rule('/interventions/<incident_id>/status', view_func=update_status_view , methods=['PUT',])
         

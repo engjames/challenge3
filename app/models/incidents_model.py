@@ -34,12 +34,29 @@ class CreateRecord():
         conn.commit()
         
     @staticmethod
-    def update(status,incident_id):
+    def update_location(user_id, incident_id, location):
+        cur = conn.cursor()
+        sql = """
+            UPDATE incidents set location = %s WHERE incident_id = %s
+            """
+        cur.execute(sql,(location, incident_id,))
+        conn.commit()
+    
+    @staticmethod
+    def update_comment(user_id, incident_id, comment):
+        cur = conn.cursor()
+        sql = """
+            UPDATE incidents set comment = %s WHERE incident_id = %s
+            """
+        cur.execute(sql,(comment, incident_id,))
+        conn.commit()
+    @staticmethod
+    def update_status(user_id, incident_id, status):
         cur = conn.cursor()
         sql = """
             UPDATE incidents set status = %s WHERE incident_id = %s
             """
-        cur.execute(sql,(status,incident_id,))
+        cur.execute(sql,(status, incident_id,))
         conn.commit()
 
     @staticmethod
