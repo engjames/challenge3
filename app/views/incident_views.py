@@ -16,7 +16,6 @@ class Incident(MethodView):
         Return all incidents if incident id is None or return an incident with the supplied incident Id.
         :param current_user: User
         :param incident_id: 
-        :return:
         """
         sql = """SELECT isadmin FROM users WHERE email=%s"""
         cur = conn.cursor()
@@ -48,7 +47,6 @@ class Incident(MethodView):
                     return response_for_user_incidents('success', all_incidents, 200)
                 return response('success', "There exists no incidents", 200)
             
-
             try:
                 int(incident_id)
             except ValueError:
@@ -70,7 +68,6 @@ class Incident(MethodView):
                             'status':row[5],
                             'createdOn':row[6]
                         }
-
                     return response_for_user_incidents('success', user_incident, 200)
                 return response('failed', "Incident not found", 404) 
         return response('failed', 'Sorry, this request requires administrative privileges to run', 401)
