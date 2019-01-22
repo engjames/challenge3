@@ -149,7 +149,7 @@ class Incident(MethodView):
             SELECT * FROM incidents WHERE createdby=%s AND incident_id=%s 
         """
         cur.execute(sql2,(user_id, int(incident_id)))
-        incident_record = cur.fetchall()
+        incident_record = cur.fetchone()
         
         
         #if there is no matching record
@@ -164,7 +164,6 @@ class Incident(MethodView):
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.delete(user_id,int(incident_id))
         return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Intervention record has been deleted"}]})
-
 
 #generating routes for our endpoints
 class GetIncidentUrls:
