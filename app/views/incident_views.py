@@ -43,7 +43,6 @@ class Incident(MethodView):
                             'createdOn':row[7]
                         }
                         all_incidents.append(incident)
-
                     return response_for_user_incidents('success', all_incidents, 200)
                 return response('success', "There exists no incidents", 200)
             
