@@ -17,7 +17,6 @@ conn = psycopg2.connect(database = "testdb")
 
 
 
-
 # Import the application views
 from app.views.user_views import GetAuthUrls
 from app.views.incident_views import GetIncidentUrls
