@@ -51,9 +51,9 @@ class Incident(MethodView):
                         }
                         all_incidents.append(incident)
 
-                    return response_for_user_incidents('success', all_incidents, 200)
-                return response('success', "There exists no incidents", 200)
-            return response('failed', 'Sorry, this request requires administrative privileges to run', 401)
+                    return jsonify({"status": 200, "data":[all_incidents]}),200
+                return jsonify({"status":404, "error":"There exists no incidents"}),404
+            return jsonify({"status":401, "error":"Sorry, this request requires administrative privileges to run"}), 401
                 
         #this point is reached if the user has provided the incident_id
         #lets check if it is a valid id
@@ -61,7 +61,7 @@ class Incident(MethodView):
             int(incident_id)
         #if we can't convert it to an integer, let's return the exception message below
         except ValueError:
-            return response('failed', 'Please provide a valid Incident Id', 400)
+            return jsonify({"status":400, "error" : "Please provide a valid Incident Id"}),400
         #lets continue if we can change the incident-id to integer
         else:
             #lets select the record matching the given incident_id
@@ -119,10 +119,13 @@ class Incident(MethodView):
                 #lets create the intervention record if it doesnt exist
                 if not incident:
                     CreateRecord(user_id, title, category, comment, location).save()
-                    return response('success', 'Incident created successfully', 201)
-                return response('failed', 'Failed, Incident already exists, Please wait as they work on it', 400)
-            return response('failed', 'Category, comment and location should be a string', 400)
-        return response('failed', 'Content-type must be json', 202)                   
+                    f = """SELECT currval(pg_get_serial_sequence(%s,%s))"""
+                    cur.execute(f,('incidents', 'incident_id'))
+                    latest_incident_id = cur.fetchone()
+                    return jsonify({"status":201, "data":[{"id": latest_incident_id[0], "Message":"Created intervention record"}]}),201
+                return jsonify({"status":400, "error":"Incident already exists, Please wait as they work on it"}), 400
+            return jsonify({"status":400, "error":"Category, comment and location should be a string"}),400
+        return jsonify({"status":400, "error":"Content-type must be json"}),400              
 
     @token_required   
     def put(current_user, self, incident_id):
@@ -134,13 +137,13 @@ class Incident(MethodView):
             int(incident_id)
         #if we can't convert it to an integer, let's return the exception message below
         except ValueError:
-            return response('failed', 'Please provide a valid Incident Id', 400)
+            return jsonify({"status":400, "error" : "Please provide a valid Incident Id"}),400
         
         if 'location' not in request.json:
-            return jsonify({"status": 400, "data":[{"error-message" : "wrong body format. follow this example ->> {'location':'[8.9090,56.2200]'}"}]})
+            return jsonify({"status": 400, "error" : "wrong body format. follow this example ->> {'location':'[8.9090,56.2200]'}"})
         
         if not isinstance(request.json['location'], str):
-            return jsonify({"status":400, "data": [{"error-message" : "Location must a string"}]})
+            return jsonify({"status":400, "error" : "Location must a string"}),400
 
         cur = conn.cursor()
         sql1 = """
@@ -161,13 +164,13 @@ class Incident(MethodView):
         
         #if there is no matching record
         if not incident_record:
-            return jsonify({"status":404, "data": [{"error-message" : "No intervention record found with this id"}]})
+            return jsonify({"status":404, "error" : "No intervention record found with this id"}),404
         
         #we can not delete a record with statuses of 'under investigation','rejected','resolved'
         #get the status which is in position 6 of the returned list
         status = incident_record[6]
         if status in ['under investigation','rejected','resolved']:
-            return jsonify({"status":400, "data": [{"error-message" : "You can no longer edit or delete this intervention"}]})
+            return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"}),400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_location(user_id, int(incident_id), location=request.json['location'])
         return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
@@ -178,7 +181,7 @@ class Incident(MethodView):
         try:
             int(incident_id)
         except ValueError:
-            return response('failed', 'Please provide a valid Incident Id', 400)
+            return jsonify({"status":400, "error" : "Please provide a valid Incident Id"}),400
         
         #Current user contains the email, lets use the email to get the user's id
         cur = conn.cursor()
@@ -201,13 +204,13 @@ class Incident(MethodView):
         
         #if there is no matching record
         if not incident_record:
-            return jsonify({"status":404, "data": [{"error-message" : "No intervention record found with this id"}]})
+            return jsonify({"status":404, "error" : "No intervention record found with this id"}),404
         
         #we can not delete a record with statuses of 'under investigation','rejected','resolved'
         #get the status which is in position 6 of the returned list
         status = incident_record[6]
         if status in ['under investigation','rejected','resolved']:
-            return jsonify({"status":400, "data": [{"error-message" : "You can no longer edit or delete this red-flag"}]})
+            return jsonify({"status":400, "error" : "You can no longer edit or delete this red-flag"}), 400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.delete(user_id,int(incident_id))
         return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Intervention record has been deleted"}]})
@@ -224,13 +227,13 @@ class InterventionComment(MethodView):
             int(incident_id)
         #if we can't convert it to an integer, let's return the exception message below
         except ValueError:
-            return response('failed', 'Please provide a valid Incident Id', 400)
+            return jsonify({"status":400, "error" : "Please provide a valid Incident Id"}),400
         
         if 'comment' not in request.json:
-            return jsonify({"status": 400, "data":[{"error-message" : "wrong body format. follow this example ->> {'comment':'Repair roads'}"}]})
+            return jsonify({"status": 400, "error" : "wrong body format. follow this example ->> {'comment':'Repair roads'}"})
         
         if not isinstance(request.json['comment'], str):
-            return jsonify({"status":400, "data": [{"error-message" : "Comment must a string"}]})
+            return jsonify({"status":400, "error" : "Comment must a string"})
 
         cur = conn.cursor()
         sql1 = """
@@ -251,13 +254,13 @@ class InterventionComment(MethodView):
         
         #if there is no matching record
         if not incident_record:
-            return jsonify({"status":404, "data": [{"error-message" : "No intervention record found with this id"}]})
+            return jsonify({"status":404, "error" : "No intervention record found with this id"}),404
         
         #we can not delete a record with statuses of 'under investigation','rejected','resolved'
         #get the status which is in position 6 of the returned list
         status = incident_record[6]
         if status in ['under investigation','rejected','resolved']:
-            return jsonify({"status":400, "data": [{"error-message" : "You can no longer edit or delete this intervention"}]})
+            return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"})
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_comment(user_id, int(incident_id), comment=request.json['comment'])
         return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s comment"}]})
@@ -277,20 +280,20 @@ class InterventionStatus(MethodView):
         user_type= user_record[0]
         #verify if isAdmin is true
         if not user_type == "true":
-            return response('failed', 'Sorry, this request requires administrative privileges to run', 401)    
+            return jsonify({'status':401, 'error':'Sorry, this request requires administrative privileges to run'}), 401   
 
         #lets check if it is a valid id
         try:
             int(incident_id)
         #if we can't convert it to an integer, let's return the exception message below
         except ValueError:
-            return response('failed', 'Please provide a valid Incident Id', 400)
+            return jsonify({"status":400, "error" : "Please provide a valid Incident Id"}),400
         
         if 'status' not in request.json:
-            return jsonify({"status": 400, "data":[{"error-message" : "wrong body format. follow this example ->> {'status':'Resolved'}"}]})
+            return jsonify({"status": 400, "message" : "wrong body format. follow this example ->> {'status':'Resolved'}"})
         
         if not isinstance(request.json['status'], str):
-            return jsonify({"status":400, "data": [{"error-message" : "Status must a string"}]})
+            return jsonify({"status":400, "error" : "Status must a string"}),400
 
         cur = conn.cursor()
         sql1 = """
@@ -312,13 +315,13 @@ class InterventionStatus(MethodView):
         
         #if there is no matching record
         if not incident_record:
-            return jsonify({"status":404, "data": [{"error-message" : "No intervention record found with this id"}]})
+            return jsonify({"status":404, "error" : "No intervention record found with this id"}),400
         
         #we can not delete a record with statuses of 'under investigation','rejected','resolved'
         #get the status which is in position 6 of the returned list
         status = request.json['status']
         if status.lower() not in ['under investigation','rejected','resolved']:
-            return jsonify({"status":400, "data": [{"error-message" : "The status can either be 'under investigation', 'rejected', or 'resolved'"}]})
+            return jsonify({"status":400, "error" : "The status can either be 'under investigation', 'rejected', or 'resolved'"}),400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_status(user_id, int(incident_id), status)
         return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated intervention record’s status"}]})
@@ -334,7 +337,7 @@ class GetIncidentUrls:
         edit_comment_view = InterventionComment.as_view('edit_comment')
         update_status_view = InterventionStatus.as_view('edit_status')
 
-        app.add_url_rule('/interventions', defaults={'incident_id': None},
+        app.add_url_rule('/incidents', defaults={'incident_id': None},
                          view_func=incident_view, methods=['GET',])
         app.add_url_rule('/interventions', view_func=incident_view, methods=['POST',])
         app.add_url_rule('/interventions/<incident_id>', view_func=incident_view, methods=['GET', 'DELETE',])
