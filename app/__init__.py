@@ -12,8 +12,8 @@ bcrypt = Bcrypt(app)
 
 if os.getenv('db') == 'heroku':
     conn = psycopg2.connect(database = "testdb")
-    
-conn = psycopg2.connect(database = "testdb")
+else: 
+    conn = psycopg2.connect(database = "testdb")
 
 
 
