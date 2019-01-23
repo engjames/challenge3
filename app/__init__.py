@@ -15,6 +15,8 @@ conn = psycopg2.connect(database = "ireporter",user="postgres", password="james"
 # Import the application views
 from app.views.user_views import GetAuthUrls
 from app.views.incident_views import GetIncidentUrls
+from app.views.redflag_views import GetRedflagUrls
 GetAuthUrls.fetch_urls(app)
 GetIncidentUrls.fetch_urls(app)
+GetRedflagUrls.fetch_urls(app)
 
