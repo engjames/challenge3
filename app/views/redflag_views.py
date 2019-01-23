@@ -18,7 +18,6 @@ class Incident(MethodView):
         :param incident_id: 
         :return:
         """
-
         #let's return all incidents if the incident_id is None
         if incident_id is None:
             #It's only the admin that can execute this endpoint. lets use the enail to get the user type
