@@ -10,7 +10,13 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = '12345678'
 bcrypt = Bcrypt(app)
 
-conn = psycopg2.connect(database = "ireporter",user="postgres", password="james",host="localhost",port=5432)
+if os.getenv('db') == 'heroku':
+    conn = psycopg2.connect(database = "testdb")
+    
+conn = psycopg2.connect(database = "testdb")
+
+
+
 
 # Import the application views
 from app.views.user_views import GetAuthUrls

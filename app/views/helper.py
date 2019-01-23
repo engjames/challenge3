@@ -77,7 +77,7 @@ def response(status, message, status_code):
     })), status_code
 
 
-def response_auth(status, message, token, status_code):
+def response_auth(user_object, token, status_code):
     """
     Make a Http response to send the auth token
     :param status: Status
@@ -87,9 +87,8 @@ def response_auth(status, message, token, status_code):
     :return: Http Json response
     """
     return make_response(jsonify({
-        'status': status,
-        'message': message,
-        'auth_token': token.decode('utf-8')
+        'status': status_code,
+        'data': [{"token":token, "user": user_object}]
     })), status_code
 
 def response_for_user_incidents(status, category, status_code):

@@ -75,6 +75,7 @@ class User:
         
         # sub refers to the data to be encrypted
         # secret key is the key we use t encrypt the data 
+        
         try:
             payload = {
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days = 1),

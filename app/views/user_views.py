@@ -29,12 +29,21 @@ class RegisterUser(MethodView):
                         user = User.get_by_email(email)
                         if not user:
                             User(firstname = firstname, lastname = lastname, email = email, password = password, isAdmin= isAdmin).save()
-                            return response('success', 'Successfully registered', 201)
-                        return response('failed', 'Failed, User already exists, Please sign In', 400)
-                    return response('failed', 'Missing or wrong email format or password is less than five characters', 400)
-                return response('failed', 'Firstname or Lastname should be a string', 400)
-            return response('failed', 'Firstname or Lastname or Email or password is missing', 400)
-        return response('failed', 'Content-type must be json', 400)
+                            cur = conn.cursor()
+                            sql1 = """
+                                SELECT row_to_json(users) FROM users WHERE email=%s
+                            """
+                            cur.execute(sql1,(email,))
+                            user = cur.fetchone()
+                            return jsonify({
+                                            'status': 201,
+                                            'data': [{"token": User.encode_auth_token(email).decode('utf-8'), "user": user[0] }]
+                                        }), 201
+                        return jsonify({"status":400, "error":"Failed, User already exists, Please sign In"}), 400
+                    return jsonify({"status":400, "error": "Missing or wrong email format or password is less than five characters"}),400
+                return jsonify({"status":400, "error": "Firstname or Lastname should be a string"}),400
+            return jsonify({"status":400, "error":"Firstname or Lastname or Email or password is missing"}),400
+        return jsonify({"status":400, "error":"Content-type must be json"}),400
 
 
 class LoginUser(MethodView):
@@ -51,15 +60,18 @@ class LoginUser(MethodView):
             if re.match(r"[^@]+@[^@]+\.[^@]+", email) and len(password ) > 5:
                 cur = conn.cursor()
                 sql1 = """
-                    SELECT * FROM users WHERE email=%s
+                    SELECT row_to_json(users) FROM users WHERE email=%s
                 """
                 cur.execute(sql1,(email,))
                 user = cur.fetchone()
-                if user and bcrypt.check_password_hash(user[4], password):
-                    return response_auth('success', 'Successfully logged In', User.encode_auth_token(user[0]), 200)
-                return response('failed', 'User does not exist or password is incorrect', 401)
-            return response('failed', 'Missing or wrong email format or password is less than five characters', 401)
-        return response('failed', 'Content-type must be json', 202)
+                if user and bcrypt.check_password_hash(user[0]['password'], password):
+                    return jsonify({
+                                            'status': 200,
+                                            'data': [{"token": User.encode_auth_token(user[0]['user_id']).decode('utf-8'), "user": user[0] }]
+                                        }), 200
+                return jsonify({"status":401, "error":"User does not exist or password is incorrect"}), 401
+            return jsonify({"status":400, "error":"Missing or wrong email format or password is less than five characters"}), 401
+        return jsonify({"status":400, "error":"Content-type must be json"}), 400
 
 class GetAuthUrls:
     @staticmethod

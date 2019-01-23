@@ -18,6 +18,7 @@ class Incident(MethodView):
         :param incident_id: 
         :return:
         """
+
         #let's return all incidents if the incident_id is None
         if incident_id is None:
             #It's only the admin that can execute this endpoint. lets use the enail to get the user type
@@ -169,7 +170,7 @@ class Incident(MethodView):
             return jsonify({"status":400, "data": [{"error-message" : "You can no longer edit or delete this redflag"}]})
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_location(user_id, int(incident_id), location=request.json['location'])
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
+        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
         
 
     @token_required
@@ -236,7 +237,7 @@ class RedFlagStatus(MethodView):
             return response('failed', 'Please provide a valid Incident Id', 400)
         
         if 'status' not in request.json:
-            return jsonify({"status": 400, "data":[{"error-message" : "wrong body format. follow this example ->> {'status':'Resolved'}"}]}), 400
+            return jsonify({"status": 400, "data":[{"error-message" : "wrong body format. follow this example ->> {'status':'Resolved'}"}]})
         
         if not isinstance(request.json['status'], str):
             return jsonify({"status":400, "data": [{"error-message" : "Status must a string"}]})
@@ -270,7 +271,7 @@ class RedFlagStatus(MethodView):
             return jsonify({"status":400, "data": [{"error-message" : "The status can either be 'under investigation', 'rejected', or 'resolved'"}]})
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_status(user_id, int(incident_id), status)
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s status"}]})
+        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s status"}]})
 
 
 #generating routes for our endpoints
