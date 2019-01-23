@@ -334,10 +334,10 @@ class GetIncidentUrls:
         edit_comment_view = InterventionComment.as_view('edit_comment')
         update_status_view = InterventionStatus.as_view('edit_status')
 
-        app.add_url_rule('/incidents', defaults={'incident_id': None},
+        app.add_url_rule('/interventions', defaults={'incident_id': None},
                          view_func=incident_view, methods=['GET',])
-        app.add_url_rule('/incidents', view_func=incident_view, methods=['POST',])
-        app.add_url_rule('/incidents/<incident_id>', view_func=incident_view, methods=['GET', 'DELETE',])
+        app.add_url_rule('/interventions', view_func=incident_view, methods=['POST',])
+        app.add_url_rule('/interventions/<incident_id>', view_func=incident_view, methods=['GET', 'DELETE',])
         app.add_url_rule('/interventions/<incident_id>/location', view_func=incident_view, methods=['PUT',])
         app.add_url_rule('/interventions/<incident_id>/comment', view_func=edit_comment_view, methods=['PUT',])
         app.add_url_rule('/interventions/<incident_id>/status', view_func=update_status_view , methods=['PUT',])
