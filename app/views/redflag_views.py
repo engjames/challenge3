@@ -170,7 +170,7 @@ class Incident(MethodView):
             return jsonify({"status":400, "data": [{"error-message" : "You can no longer edit or delete this redflag"}]})
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_location(user_id, int(incident_id), location=request.json['location'])
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
+        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
         
 
     @token_required
@@ -271,7 +271,7 @@ class RedFlagStatus(MethodView):
             return jsonify({"status":400, "data": [{"error-message" : "The status can either be 'under investigation', 'rejected', or 'resolved'"}]})
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_status(user_id, int(incident_id), status)
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s status"}]})
+        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s status"}]})
 
 
 #generating routes for our endpoints

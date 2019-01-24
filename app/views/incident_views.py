@@ -51,7 +51,7 @@ class Incident(MethodView):
                         }
                         all_incidents.append(incident)
 
-                    return jsonify({"status": 200, "data":[all_incidents]}),200
+                    return jsonify({"status": 200, "data":[all_incidents]}), 200
                 return jsonify({"status":404, "error":"There exists no incidents"}),404
             return jsonify({"status":401, "error":"Sorry, this request requires administrative privileges to run"}), 401
                 
@@ -82,9 +82,8 @@ class Incident(MethodView):
                         'status':row[6],
                         'createdOn':row[7]
                     }
-
-                return response_for_user_incidents('success', user_incident, 200)
-            return response('failed', "Incident not found", 404) 
+                return jsonify({"status": 200, "data":[user_incident]}),200
+            return jsonify({"status":404, "error" : "Incident not found"}),404
     
                 
     @token_required
@@ -115,9 +114,7 @@ class Incident(MethodView):
     
             if not category or not comment or not location or not title:
                 return jsonify({"status":400, "error":"Category, comment and location can not be empty"}),400  
-            
-            if category =="" or comment == "" or location == "" or title == "":
-                return jsonify({"status":400, "error": "Location or category or comment or title can not be empty"}),400
+
 
             #check if all posted data is in form of a string as required in the document
             if isinstance(category,str) and isinstance(comment,str) and isinstance(location,str) and isinstance(title,str):
@@ -191,7 +188,7 @@ class Incident(MethodView):
             return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"}),400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_location(user_id, int(incident_id), location=request.json['location'])
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s location"}]}), 200
         
 
     @token_required
@@ -231,7 +228,7 @@ class Incident(MethodView):
             return jsonify({"status":400, "error" : "You can no longer edit or delete this red-flag"}), 400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.delete(user_id,int(incident_id))
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Intervention record has been deleted"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Intervention record has been deleted"}]}), 200
 
 
 class InterventionComment(MethodView):
@@ -281,7 +278,7 @@ class InterventionComment(MethodView):
             return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"})
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_comment(user_id, int(incident_id), comment=request.json['comment'])
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s comment"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s comment"}]}), 200
 
 class InterventionStatus(MethodView):
     
@@ -342,7 +339,7 @@ class InterventionStatus(MethodView):
             return jsonify({"status":400, "error" : "The status can either be 'under investigation', 'rejected', or 'resolved'"}),400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_status(user_id, int(incident_id), status)
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s status"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s status"}]}), 200
 
 
 
@@ -355,7 +352,7 @@ class GetIncidentUrls:
         edit_comment_view = InterventionComment.as_view('edit_comment')
         update_status_view = InterventionStatus.as_view('edit_status')
 
-        app.add_url_rule('/incidents', defaults={'incident_id': None},
+        app.add_url_rule('/interventions', defaults={'incident_id': None},
                          view_func=incident_view, methods=['GET',])
         app.add_url_rule('/interventions', view_func=incident_view, methods=['POST',])
         app.add_url_rule('/interventions/<incident_id>', view_func=incident_view, methods=['GET', 'DELETE',])

@@ -4,12 +4,13 @@ from flask.views import MethodView
 from app import bcrypt, conn
 from app.models.user_model import User
 from app.views.helper import response, response_auth,token_required
+from flasgger import swag_from
 
 class RegisterUser(MethodView):
     """
     View function to register a user 
     """
-
+    @swag_from('../docs/signup.yml')
     def post(self):
         """
         Register a user, generate their token and add them to the database
@@ -23,12 +24,6 @@ class RegisterUser(MethodView):
                 email = post_data.get('email')
                 password = post_data.get('password')
                 isAdmin = post_data.get('isAdmin')
-
-                # if not firstname or not lastname or not email or not password or not  isAdmin:
-                #     return jsonify({"status":400, "error":"firstname, lastname, email, password and isAdmin can not be empty"}),400  
-            
-                # if firstname =="" or lastname == "" or email == "" or password == "" or isAdmin == "":
-                #     return jsonify({"status":400, "error": " firstname, lastname, email, password or isAdmin"}),400
 
                 if isinstance(firstname, str) and isinstance(lastname, str):
                     if re.match(r"[^@]+@[^@]+\.[^@]+", email) and len(password) > 5:
