@@ -1,7 +1,3 @@
 [report]
 omit = 
-
-*/app/views/redflag_views.py
-*/app/models/user_model.py
-*/app/views/helper.py
-*/run.py  
+tests\__init__.py, tests\base.py, tests\test_config.py, tests\test_intervention_views.py, tests\test_redflag_views.py, tests\test_user_views.py,app\models\incidents_model.py,app\models\user_model.py,app\views\__init__.py ,app\views\helper.py , app\views\redflag_views.py,app\__init__.py , app\models\__init__.py 
