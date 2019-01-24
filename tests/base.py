@@ -47,7 +47,18 @@ class BaseTestCase(TestCase):
         Helper method for registering a user with dummy data
         :return:
         """
-        response = self.register_user('James', 'Kisuule', 'abc@gmail.com', '123456', 'true')
+        response = self.register_user('James', 'Kisuule', 'abc@gmail.com', '123456', 'false')
+        return self.client.post(
+            'auth/login',
+            content_type='application/json',
+            data=json.dumps(dict(email=email, password=password)))
+
+    def login_admin(self, email, password):
+        """
+        Helper method for registering a user with dummy data
+        :return:
+        """
+        response = self.register_user('Francis', 'Kisuule', 'admin@gmail.com', '123456', 'true')
         return self.client.post(
             'auth/login',
             content_type='application/json',
@@ -84,4 +95,12 @@ class BaseTestCase(TestCase):
         :return:
         """
         auth_res = self.login_user('abc@gmail.com', '123456')
+        return json.loads(auth_res.data.decode())['data'][0]['token']
+    
+    def get_admin_token(self):
+        """
+        Get a user token
+        :return:
+        """
+        auth_res = self.login_admin('admin@gmail.com', '123456')
         return json.loads(auth_res.data.decode())['data'][0]['token']

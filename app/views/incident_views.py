@@ -92,6 +92,18 @@ class Incident(MethodView):
         """
         Method for creating the new incident
         """
+        sql = """SELECT isadmin FROM users WHERE email=%s"""
+        cur = conn.cursor()
+        cur.execute(sql,(current_user,))
+        user_record = cur.fetchone()
+        user_type= user_record[0]
+        #verify if isAdmin is true
+        if user_type == "true":
+            return jsonify({"status":400, "error":"Admin can only update intervention records"}),400  
+
+
+
+
         #check if the posted dat has a content type of json
         if request.content_type == 'application/json':
             #get all posted data in the request that is in form of json
@@ -101,6 +113,10 @@ class Incident(MethodView):
             comment = post_data.get('comment')
             location = post_data.get('location')
     
+            if not category or not comment or not location or not title:
+                return jsonify({"status":400, "error":"Category, comment and location can not be empty"}),400  
+
+
             #check if all posted data is in form of a string as required in the document
             if isinstance(category,str) and isinstance(comment,str) and isinstance(location,str) and isinstance(title,str):
                 #check if the intervention record doesn't exist

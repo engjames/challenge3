@@ -5,8 +5,8 @@ import unittest
 import json
 
 
-class TestOrdersBluePrint(BaseTestCase):
-    def test_orders_creation(self):
+class TestInterventionBluePrint(BaseTestCase):
+    def test_intervention_creation(self):
         """
         Test an intervention is successfully created through the api
         :return:

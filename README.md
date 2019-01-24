@@ -1,4 +1,8 @@
 # iReporter
+[![Build Status](https://travis-ci.org/engjames/challenge3.svg?branch=develop)](https://travis-ci.org/engjames/challenge3)
+[![Coverage Status](https://coveralls.io/repos/github/engjames/challenge3/badge.svg?branch=develop)](https://coveralls.io/github/engjames/challenge3?branch=develop)
+[![Maintainability](https://api.codeclimate.com/v1/badges/96c4d04c86b3ee3484af/maintainability)](https://codeclimate.com/github/engjames/challenge3/maintainability)
+
 iReporter enables any/every citizen to bring any form of corruption to the notice of appropriate authorities and the general public. Users can also report on things that needs government intervention
 
 ## Getting Started
