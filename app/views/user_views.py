@@ -3,7 +3,7 @@ from flask import request, jsonify, make_response
 from flask.views import MethodView
 from app import bcrypt, conn
 from app.models.user_model import User
-from app.views.helper import response, response_auth,token_required
+from app.views.helper import response, response_auth, token_required
 
 class RegisterUser(MethodView):
     """

@@ -2,6 +2,7 @@ from app import conn
 
 cur = conn.cursor()
 
+
 class CreateRecord():
     cur.execute("""CREATE TABLE IF NOT EXISTS incidents (
                 incident_id SERIAL PRIMARY KEY,
@@ -17,9 +18,10 @@ class CreateRecord():
                     ON UPDATE CASCADE ON DELETE CASCADE
             )
             """)
+
     def __init__(self, user_id, title, category, comment, location):
         self.user_id = user_id
-        self.title = title 
+        self.title = title
         self.category = category
         self.comment = comment
         self.location = location
@@ -27,49 +29,52 @@ class CreateRecord():
     def save(self):
         cur = conn.cursor()
         sql = """
-            INSERT INTO incidents (createdBy, title, category, comment, location) 
+            INSERT INTO incidents
+            (createdBy, title, category, comment, location)
                     VALUES (%s,%s,%s,%s,%s)
         """
-        cur.execute(sql,(self.user_id, self.title, self.category, self.comment, self.location,))
+        cur.execute(sql, (self.user_id, self.title, self.category,
+                    self.comment, self.location,))
         conn.commit()
-        
+
     @staticmethod
     def update_location(user_id, incident_id, location):
         cur = conn.cursor()
         sql = """
             UPDATE incidents set location = %s WHERE incident_id = %s
             """
-        cur.execute(sql,(location, incident_id,))
+        cur.execute(sql, (location, incident_id,))
         conn.commit()
-    
+
     @staticmethod
     def update_comment(user_id, incident_id, comment):
         cur = conn.cursor()
         sql = """
             UPDATE incidents set comment = %s WHERE incident_id = %s
             """
-        cur.execute(sql,(comment, incident_id,))
+        cur.execute(sql, (comment, incident_id,))
         conn.commit()
+
     @staticmethod
     def update_status(user_id, incident_id, status):
         cur = conn.cursor()
         sql = """
             UPDATE incidents set status = %s WHERE incident_id = %s
             """
-        cur.execute(sql,(status, incident_id,))
+        cur.execute(sql, (status, incident_id,))
         conn.commit()
 
     @staticmethod
-    def delete(user_id,incident_id):
+    def delete(user_id, incident_id):
         cur = conn.cursor()
         sql2 = """
-            DELETE FROM incidents WHERE createdby=%s AND incident_id=%s 
+            DELETE FROM incidents WHERE createdby=%s AND incident_id=%s
         """
-        cur.execute(sql2,(user_id, incident_id))
+        cur.execute(sql2, (user_id, incident_id))
         conn.commit()
 
     @staticmethod
-    def get_by_name(user_id,title):
+    def get_by_name(user_id, title):
         """
         Filter incidents by title.
         :param category:
@@ -77,10 +82,9 @@ class CreateRecord():
         """
         cur = conn.cursor()
         sql1 = """
-             SELECT * FROM incidents WHERE createdBy=%s AND title=%s AND status=%s
+             SELECT * FROM incidents WHERE createdBy=%s AND title=%s AND
+            status=%s
         """
-        cur.execute(sql1,(user_id,title,"draft",))
+        cur.execute(sql1, (user_id, title, "draft",))
         category1 = cur.fetchone()
         return category1
-
-
