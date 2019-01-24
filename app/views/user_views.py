@@ -24,6 +24,12 @@ class RegisterUser(MethodView):
                 password = post_data.get('password')
                 isAdmin = post_data.get('isAdmin')
 
+                # if not firstname or not lastname or not email or not password or not  isAdmin:
+                #     return jsonify({"status":400, "error":"firstname, lastname, email, password and isAdmin can not be empty"}),400  
+            
+                # if firstname =="" or lastname == "" or email == "" or password == "" or isAdmin == "":
+                #     return jsonify({"status":400, "error": " firstname, lastname, email, password or isAdmin"}),400
+
                 if isinstance(firstname, str) and isinstance(lastname, str):
                     if re.match(r"[^@]+@[^@]+\.[^@]+", email) and len(password) > 5:
                         user = User.get_by_email(email)

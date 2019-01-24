@@ -115,7 +115,9 @@ class Incident(MethodView):
     
             if not category or not comment or not location or not title:
                 return jsonify({"status":400, "error":"Category, comment and location can not be empty"}),400  
-
+            
+            if category =="" or comment == "" or location == "" or title == "":
+                return jsonify({"status":400, "error": "Location or category or comment or title can not be empty"}),400
 
             #check if all posted data is in form of a string as required in the document
             if isinstance(category,str) and isinstance(comment,str) and isinstance(location,str) and isinstance(title,str):
