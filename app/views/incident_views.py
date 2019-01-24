@@ -191,7 +191,7 @@ class Incident(MethodView):
             return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"}),400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_location(user_id, int(incident_id), location=request.json['location'])
-        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
         
 
     @token_required
@@ -281,7 +281,7 @@ class InterventionComment(MethodView):
             return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"})
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_comment(user_id, int(incident_id), comment=request.json['comment'])
-        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s comment"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s comment"}]})
 
 class InterventionStatus(MethodView):
     
