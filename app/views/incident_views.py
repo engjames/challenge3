@@ -342,7 +342,7 @@ class InterventionStatus(MethodView):
             return jsonify({"status":400, "error" : "The status can either be 'under investigation', 'rejected', or 'resolved'"}),400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_status(user_id, int(incident_id), status)
-        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated intervention record’s status"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s status"}]})
 
 
 
