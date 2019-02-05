@@ -24,18 +24,23 @@ class RegisterUser(MethodView):
                 email = post_data.get('email')
                 password = post_data.get('password')
                 isAdmin = post_data.get('isAdmin')
-
+               
                 if isinstance(firstname, str) and isinstance(lastname, str):
                     if re.match(r"[^@]+@[^@]+\.[^@]+", email) and len(password) > 5:
+                        
                         user = User.get_by_email(email)
+                        
                         if not user:
+                            
                             User(firstname = firstname, lastname = lastname, email = email, password = password, isAdmin= isAdmin).save()
+                            
                             cur = conn.cursor()
                             sql1 = """
                                 SELECT row_to_json(users) FROM users WHERE email=%s
                             """
                             cur.execute(sql1,(email,))
                             user = cur.fetchone()
+                            # return jsonify({"message":"user selected"})
                             return jsonify({
                                             'status': 201,
                                             'data': [{"token": User.encode_auth_token(email).decode('utf-8'), "user": user[0] }]
