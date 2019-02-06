@@ -1,8 +1,9 @@
 from flask.views import MethodView
 from flask import request,jsonify
+from werkzeug.utils import secure_filename
 from app.views.helper import token_required, response,response_for_user_incidents
 from app.models.incidents_model import CreateRecord
-from app import conn
+from app import conn, ALLOWED_EXTENSIONS
 #create a cursor objects for executing our sql statements
 cur = conn.cursor()
 
@@ -32,9 +33,9 @@ class Incident(MethodView):
                 
                 cur = conn.cursor()
                 sql = """
-                    SELECT * FROM incidents
+                    SELECT * FROM incidents WHERE category=%s
                 """
-                cur.execute(sql)
+                cur.execute(sql,("intervention",))
                 rows = cur.fetchall()
                 all_incidents = []
                 if rows:
@@ -48,10 +49,11 @@ class Incident(MethodView):
                             'location':row[5],
                             'status':row[6],
                             'createdOn':row[7]
+                            
                         }
                         all_incidents.append(incident)
 
-                    return jsonify({"status": 200, "data":[all_incidents]}),200
+                    return jsonify({"status": 200, "data":all_incidents}), 200
                 return jsonify({"status":404, "error":"There exists no incidents"}),404
             return jsonify({"status":401, "error":"Sorry, this request requires administrative privileges to run"}), 401
                 
@@ -81,12 +83,12 @@ class Incident(MethodView):
                         'location':row[5],
                         'status':row[6],
                         'createdOn':row[7]
+                    
                     }
-
-                return response_for_user_incidents('success', user_incident, 200)
-            return response('failed', "Incident not found", 404) 
+                return jsonify({"status": 200, "data":[user_incident]}),200
+            return jsonify({"status":404, "error" : "Incident not found"}),404
     
-                
+
     @token_required
     def post(current_user, self):
         """
@@ -101,9 +103,6 @@ class Incident(MethodView):
         if user_type == "true":
             return jsonify({"status":400, "error":"Admin can only update intervention records"}),400  
 
-
-
-
         #check if the posted dat has a content type of json
         if request.content_type == 'application/json':
             #get all posted data in the request that is in form of json
@@ -112,10 +111,11 @@ class Incident(MethodView):
             category = post_data.get('category')
             comment = post_data.get('comment')
             location = post_data.get('location')
+            # images_url = post_data.get('images')
+            # videos = post_data.get('videos')
     
             if not category or not comment or not location or not title:
-                return jsonify({"status":400, "error":"Category, comment and location can not be empty"}),400  
-
+                return jsonify({"status":400, "error":"Category, comment and location can not be empty"}),400 
 
             #check if all posted data is in form of a string as required in the document
             if isinstance(category,str) and isinstance(comment,str) and isinstance(location,str) and isinstance(title,str):
@@ -189,7 +189,7 @@ class Incident(MethodView):
             return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"}),400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_location(user_id, int(incident_id), location=request.json['location'])
-        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s location"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s location"}]}), 200
         
 
     @token_required
@@ -229,10 +229,55 @@ class Incident(MethodView):
             return jsonify({"status":400, "error" : "You can no longer edit or delete this red-flag"}), 400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.delete(user_id,int(incident_id))
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Intervention record has been deleted"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Intervention record has been deleted"}]}), 200
 
 
 class InterventionComment(MethodView):
+
+    @token_required
+    def get(current_user,self):
+        """
+        Return all incidents if incident id is None or return an incident with the supplied incident Id.
+        :param current_user: User
+        :param incident_id: 
+        :return:
+        """
+
+      
+        sql = """SELECT user_id FROM users WHERE email=%s"""
+        cur = conn.cursor()
+        cur.execute(sql,(current_user,))
+        user_record = cur.fetchone()
+        user_id= user_record[0]
+        #verify if isAdmin is true
+        
+            
+        cur = conn.cursor()
+        sql = """
+            SELECT * FROM incidents WHERE createdBy=%s
+        """
+        cur.execute(sql,(user_id,))
+        rows = cur.fetchall()
+        all_incidents = []
+        if rows:
+            for row in rows:
+                incident = {
+                    'incident_id': row[0],
+                    'createdby': row[1],
+                    'category':row[2],
+                    'title':row[3],
+                    'comment':row[4],
+                    'location':row[5],
+                    'status':row[6],
+                    'createdOn':row[7]
+                }
+                all_incidents.append(incident)
+
+            return jsonify({"status": 200, "data":all_incidents}), 200
+        return jsonify({"status":404, "error":"There exists no incidents"}),404
+        
+
+
     @token_required   
     def put(current_user, self, incident_id):
         """
@@ -279,7 +324,7 @@ class InterventionComment(MethodView):
             return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"})
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_comment(user_id, int(incident_id), comment=request.json['comment'])
-        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s comment"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s comment"}]}), 200
 
 class InterventionStatus(MethodView):
     
@@ -340,7 +385,7 @@ class InterventionStatus(MethodView):
             return jsonify({"status":400, "error" : "The status can either be 'under investigation', 'rejected', or 'resolved'"}),400
         #call a method under create record that deletes the record. it takes in the users id and incident id
         CreateRecord.update_status(user_id, int(incident_id), status)
-        return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated intervention record’s status"}]})
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s status"}]}), 200
 
 
 
@@ -353,11 +398,12 @@ class GetIncidentUrls:
         edit_comment_view = InterventionComment.as_view('edit_comment')
         update_status_view = InterventionStatus.as_view('edit_status')
 
-        app.add_url_rule('/incidents', defaults={'incident_id': None},
+        app.add_url_rule('/interventions', defaults={'incident_id': None},
                          view_func=incident_view, methods=['GET',])
         app.add_url_rule('/interventions', view_func=incident_view, methods=['POST',])
         app.add_url_rule('/interventions/<incident_id>', view_func=incident_view, methods=['GET', 'DELETE',])
         app.add_url_rule('/interventions/<incident_id>/location', view_func=incident_view, methods=['PUT',])
         app.add_url_rule('/interventions/<incident_id>/comment', view_func=edit_comment_view, methods=['PUT',])
+        app.add_url_rule('/user_incidents', view_func=edit_comment_view, methods=['GET',])
         app.add_url_rule('/interventions/<incident_id>/status', view_func=update_status_view , methods=['PUT',])
         
