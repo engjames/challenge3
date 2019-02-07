@@ -23,6 +23,7 @@ class CreateRecord():
         self.category = category
         self.comment = comment
         self.location = location
+        
 
     def save(self):
         cur = conn.cursor()

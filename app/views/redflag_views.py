@@ -32,9 +32,9 @@ class Incident(MethodView):
                 
                 cur = conn.cursor()
                 sql = """
-                    SELECT * FROM incidents
+                    SELECT * FROM incidents WHERE category=%s
                 """
-                cur.execute(sql)
+                cur.execute(sql,("red-flag",))
                 rows = cur.fetchall()
                 all_incidents = []
                 if rows:
@@ -100,9 +100,14 @@ class Incident(MethodView):
             category = post_data.get('category')
             comment = post_data.get('comment')
             location = post_data.get('location')
+            images = post_data.get('images')
+            videos = post_data.get('videos')
+
+            if not category or not comment or not location or not title or not images or not videos:
+                return jsonify({"status":400, "error":"Category, comment, images, videos and location can not be empty"}),400  
     
             #check if all posted data is in form of a string as required in the document
-            if isinstance(category,str) and isinstance(comment,str) and isinstance(location,str) and isinstance(title,str):
+            if isinstance(category,str) and isinstance(comment,str) and isinstance(location,str) and isinstance(title,str) and isinstance(images,str) and isinstance(videos,str):
                 #check if the intervention record doesn't exist
                 #current_user contains email, lets use the email to get the user id
                 cur = conn.cursor()
@@ -121,7 +126,7 @@ class Incident(MethodView):
                     CreateRecord(user_id, title, category, comment, location).save()
                     return response('success', 'Redflag created successfully', 201)
                 return response('failed', 'Failed, Redflag already exists, Please wait as they work on it', 400)
-            return response('failed', 'Category, comment and location should be a string', 400)
+            return jsonify({"status":400, "error":"Category, comment, images, videos and location should be a string"}),400
         return response('failed', 'Content-type must be json', 202)                   
 
     @token_required   
