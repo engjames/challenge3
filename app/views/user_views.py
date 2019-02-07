@@ -53,6 +53,7 @@ class RegisterUser(MethodView):
 
 
 class LoginUser(MethodView):
+    @swag_from('../docs/login.yml')
     def post(self):
         """
         Login a user if the supplied credentials are correct.
