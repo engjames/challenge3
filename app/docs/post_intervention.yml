@@ -1,0 +1,13 @@
+Post an Intervention
+---
+tags:
+  - Post User Dashboard
+parameters:
+  - in: body
+    name: body
+    required: true
+    type: string
+    description: This route is used to post a new intervention
+responses:
+  200:
+    description: Successfully Posted an Intervention.
