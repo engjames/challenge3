@@ -4,10 +4,7 @@ from werkzeug.utils import secure_filename
 from app.views.helper import token_required, response,response_for_user_incidents
 from app.models.incidents_model import CreateRecord
 from app import conn, ALLOWED_EXTENSIONS
-<<<<<<< HEAD
-=======
 from flasgger import swag_from
->>>>>>> c3cec70c55b6648fa2555b6eb735e39f4d3fd30d
 #create a cursor objects for executing our sql statements
 cur = conn.cursor()
 
