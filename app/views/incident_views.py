@@ -240,10 +240,7 @@ class Incident(MethodView):
 class InterventionComment(MethodView):
 
     @token_required
-<<<<<<< HEAD
-=======
     @swag_from('../docs/admin_int_all.yml')
->>>>>>> c3cec70c55b6648fa2555b6eb735e39f4d3fd30d
     def get(current_user,self):
         """
         Return all incidents if incident id is None or return an incident with the supplied incident Id.
