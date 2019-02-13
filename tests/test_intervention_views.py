@@ -61,12 +61,12 @@ class TestInterventionBluePrint(BaseTestCase):
         :return:
         """
         token = self.get_user_token()
-        response = self.client.put('/interventions/1/comment',headers={"auth_token": token}, data=json.dumps({"comment":"Bribery"}), content_type='application/json')
+        response = self.client.put('/interventions/1/comment',headers={"auth_token": token}, data=json.dumps({"comment":"Bribery", "location":"1,4"}), content_type='application/json')
         data = json.loads(response.data.decode('utf-8'))
         # assert data == 200
         self.assertEqual(data['status'], 200)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['data'][0]['message'], 'Updated intervention record’s comment')
+        self.assertEqual(data['data'][0]['message'], 'Updated intervention records')
 
     def test_update_intervention_status(self):
         """

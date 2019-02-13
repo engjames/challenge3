@@ -330,8 +330,8 @@ class InterventionComment(MethodView):
         if status in ['under investigation','rejected','resolved']:
             return jsonify({"status":400, "error" : "You can no longer edit or delete this intervention"})
         #call a method under create record that deletes the record. it takes in the users id and incident id
-        CreateRecord.update_comment(user_id, int(incident_id), comment=request.json['comment'])
-        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention record’s comment"}]}), 200
+        CreateRecord.update_comment(user_id, int(incident_id),location=request.json['location'], comment=request.json['comment'])
+        return jsonify({"status":200, "data":[{"id":int(incident_id), "message":"Updated intervention records"}]}), 200
 
 class InterventionStatus(MethodView):
     
