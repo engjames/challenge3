@@ -23,6 +23,7 @@ class CreateRecord():
         self.category = category
         self.comment = comment
         self.location = location
+        
 
     def save(self):
         cur = conn.cursor()
@@ -43,12 +44,12 @@ class CreateRecord():
         conn.commit()
     
     @staticmethod
-    def update_comment(user_id, incident_id, comment):
+    def update_comment(user_id, incident_id, location, comment):
         cur = conn.cursor()
         sql = """
-            UPDATE incidents set comment = %s WHERE incident_id = %s
+            UPDATE incidents set location = %s , comment = %s WHERE incident_id = %s
             """
-        cur.execute(sql,(comment, incident_id,))
+        cur.execute(sql,(location, comment, incident_id,))
         conn.commit()
     @staticmethod
     def update_status(user_id, incident_id, status):
