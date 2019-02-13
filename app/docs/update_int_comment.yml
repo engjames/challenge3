@@ -1,0 +1,13 @@
+Update comment of an Intervention
+---
+tags:
+  - Update User Dashboard
+parameters:
+  - in: body
+    name: body
+    required: true
+    type: string
+    description: This route is used to update comment of an intervention
+responses:
+  200:
+    description: Successfully Updated the comment of an Intervention.

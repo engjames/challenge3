@@ -4,6 +4,10 @@ from werkzeug.utils import secure_filename
 from app.views.helper import token_required, response,response_for_user_incidents
 from app.models.incidents_model import CreateRecord
 from app import conn, ALLOWED_EXTENSIONS
+<<<<<<< HEAD
+=======
+from flasgger import swag_from
+>>>>>>> c3cec70c55b6648fa2555b6eb735e39f4d3fd30d
 #create a cursor objects for executing our sql statements
 cur = conn.cursor()
 
@@ -12,6 +16,7 @@ class Incident(MethodView):
     Class Incident defines the restApi methods.
     """
     @token_required
+    @swag_from('../docs/get_intervention.yml')
     def get(current_user,self, incident_id):
         """
         Return all incidents if incident id is None or return an incident with the supplied incident Id.
@@ -90,6 +95,7 @@ class Incident(MethodView):
     
 
     @token_required
+    @swag_from('../docs/post_intervention.yml')
     def post(current_user, self):
         """
         Method for creating the new incident
@@ -144,6 +150,7 @@ class Incident(MethodView):
         return jsonify({"status":400, "error":"Content-type must be json"}),400              
 
     @token_required   
+    @swag_from('../docs/update_int_location.yml')
     def put(current_user, self, incident_id):
         """
         Method for the location
@@ -193,6 +200,7 @@ class Incident(MethodView):
         
 
     @token_required
+    @swag_from('../docs/delete_intervention.yml')
     def delete(current_user,self, incident_id):
         try:
             int(incident_id)
@@ -235,6 +243,10 @@ class Incident(MethodView):
 class InterventionComment(MethodView):
 
     @token_required
+<<<<<<< HEAD
+=======
+    @swag_from('../docs/admin_int_all.yml')
+>>>>>>> c3cec70c55b6648fa2555b6eb735e39f4d3fd30d
     def get(current_user,self):
         """
         Return all incidents if incident id is None or return an incident with the supplied incident Id.
@@ -279,9 +291,10 @@ class InterventionComment(MethodView):
 
 
     @token_required   
+    @swag_from('../docs/update_int_comment.yml')
     def put(current_user, self, incident_id):
         """
-        Method for the status
+        Method for the comment
         """
         #lets check if it is a valid id
         try:
@@ -329,6 +342,7 @@ class InterventionComment(MethodView):
 class InterventionStatus(MethodView):
     
     @token_required   
+    @swag_from('../docs/update_int_status.yml')
     def put(current_user, self, incident_id):
         """
         Method for the status

@@ -24,10 +24,17 @@ class RegisterUser(MethodView):
                 email = post_data.get('email')
                 password = post_data.get('password')
                 isAdmin = post_data.get('isAdmin')
+<<<<<<< HEAD
                 
                 if isinstance(firstname, str) and isinstance(lastname, str):
                     if re.match(r"[^@]+@[^@]+\.[^@]+", email) and len(password) > 5:
                        
+=======
+               
+                if isinstance(firstname, str) and isinstance(lastname, str):
+                    if re.match(r"[^@]+@[^@]+\.[^@]+", email) and len(password) > 5:
+                        
+>>>>>>> c3cec70c55b6648fa2555b6eb735e39f4d3fd30d
                         user = User.get_by_email(email)
                         
                         if not user:
@@ -53,6 +60,7 @@ class RegisterUser(MethodView):
 
 
 class LoginUser(MethodView):
+    @swag_from('../docs/login.yml')
     def post(self):
         """
         Login a user if the supplied credentials are correct.

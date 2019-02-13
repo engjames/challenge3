@@ -25,16 +25,6 @@ class TestInterventionBluePrint(BaseTestCase):
                 self.assertTrue(response.content_type == 'application/json')
                 self.assertEqual(response.status_code, 400)
     
-    # def test_get_all_intervention_records(self):
-    #     """
-    #     Test function to get all intervention records
-    #     :return:
-    #     """
-    #     token = self.get_admin_token()
-    #     response = self.client.get('/interventions',headers={"auth_token": token},content_type='application/json')
-    #     data = json.loads(response.data.decode('utf-8'))
-    #     # assert data == 200
-    #     self.assertEqual(data['status'], 200)
 
     def test_get_a_specific_intervention(self):
         """
@@ -78,7 +68,6 @@ class TestInterventionBluePrint(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['data'][0]['message'], 'Updated intervention records')
 
-
     def test_update_intervention_status(self):
         """
         Test function to update intervention comment
@@ -92,15 +81,3 @@ class TestInterventionBluePrint(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['data'][0]['message'], 'Updated intervention record’s status')
     
-    # def test_delete_intervention_status(self):
-    #     """
-    #     Test function to delete intervention record
-    #     :return:
-    #     """
-    #     token = self.get_user_token()
-    #     response = self.client.delete('/interventions/1',headers={"auth_token": token}, content_type='application/json')
-    #     data = json.loads(response.data.decode('utf-8'))
-    #     assert data == 200
-    #     self.assertEqual(data['status'], 200)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['data'][0]['message'], 'Updated intervention record’s status')
