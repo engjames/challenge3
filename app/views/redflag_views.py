@@ -278,6 +278,41 @@ class RedFlagStatus(MethodView):
         CreateRecord.update_status(user_id, int(incident_id), status)
         return jsonify({"status":400, "data":[{"id":int(incident_id), "message":"Updated red-flag record’s status"}]})
 
+class Profile(MethodView):
+    @token_required
+    def get(current_user, self):
+        sql = """SELECT user_id FROM users WHERE email=%s"""
+        cur = conn.cursor()
+        cur.execute(sql,(current_user,))
+        user_record = cur.fetchone()
+        user_id= user_record[0]
+        cur = conn.cursor()
+        recordz = {}
+        for i in range(0,6):
+            redflags_sql = """SELECT * FROM incidents WHERE createdby=%s AND status=%s AND category=%s """
+            profile_name = None
+            if i==0:
+                profile_name = 'no_of_redflags_rejected'
+                cur.execute(redflags_sql,(user_id,'rejected','redflag',))
+            elif i ==1:
+                profile_name = 'no_of_redflags_resolved'
+                cur.execute(redflags_sql,(user_id,'resolved','redflag',))
+            elif i==2:
+                profile_name = 'no_of_redflags_under_investigation'
+                cur.execute(redflags_sql,(user_id,'under investigation','redflag',))
+            elif i == 3:
+                profile_name = 'no_of_interventions_under_investigation'
+                cur.execute(redflags_sql,(user_id,'under investigation','intervention',))
+            elif i ==4:
+                profile_name = 'no_of_interventions_resolved'
+                cur.execute(redflags_sql,(user_id,'resolved','intervention',))
+            else:
+                profile_name = 'no_of_interventions_rejected'
+                cur.execute(redflags_sql,(user_id,'rejected','intervention',))
+
+            get_redflag_profile = cur.fetchall()
+            recordz[profile_name] = len(get_redflag_profile)
+        return jsonify({'profile': recordz})
 
 #generating routes for our endpoints
 class GetRedflagUrls:
@@ -286,9 +321,10 @@ class GetRedflagUrls:
         # Register classes as view methods so that we can tell if we're working with a post or put or delete or put
         redflag_view = Incident.as_view('redflag-api')
         update_status_view = RedFlagStatus.as_view('e_status')
+        update_profile_view = Profile.as_view('profile')
 
-        app.add_url_rule('/redflags', defaults={'incident_id': None},
-                         view_func=redflag_view, methods=['GET',])
+        app.add_url_rule('/redflags', defaults={'incident_id': None}, view_func=redflag_view, methods=['GET',])
+        app.add_url_rule('/profile', view_func=update_profile_view, methods=['GET',])
         app.add_url_rule('/redflags', view_func=redflag_view, methods=['POST',])
         app.add_url_rule('/redflags/<incident_id>', view_func=redflag_view, methods=['GET', 'DELETE',])
         app.add_url_rule('/redflags/<incident_id>/location', view_func=redflag_view, methods=['PUT',])
