@@ -133,6 +133,24 @@ class LoginUser(MethodView):
             return jsonify({"status":400, "error":"Missing or wrong email format or password is less than five characters"}), 401
         return jsonify({"status":400, "error":"Content-type must be json"}), 400
 
+    @token_required
+    def get(current_user,self):
+        sql = """SELECT * FROM users WHERE email=%s"""
+        cur = conn.cursor()
+        cur.execute(sql,(current_user,))
+        row = cur.fetchone()
+        user = {
+                'user_id': row[0],
+                'firstname': row[1],
+                'lastname':row[2],
+                'email':row[3],
+                'registered_on':row[6]  
+                }
+        return jsonify({"status":200, "specific_user":user})
+        
+                   
+    
+
 class GetAuthUrls:
     @staticmethod
     def fetch_urls(app):
@@ -144,4 +162,5 @@ class GetAuthUrls:
         app.add_url_rule('/auth/signup', view_func=registration_view, methods=['POST', ])
         app.add_url_rule('/users', view_func=registration_view, methods=['GET', ])
         app.add_url_rule('/user/<user_id>/status', view_func=registration_view, methods=['PUT', ])
+        app.add_url_rule('/user', view_func=login_view, methods=['GET', ])
         app.add_url_rule('/auth/login', view_func=login_view, methods=['POST', ])
