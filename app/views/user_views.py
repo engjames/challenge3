@@ -1,5 +1,5 @@
 import re
-from flask import request, jsonify, make_response
+from flask import request, jsonify, make_response, flash
 from flask.views import MethodView
 from app import bcrypt, conn
 from app.models.user_model import User
@@ -40,11 +40,12 @@ class RegisterUser(MethodView):
                             """
                             cur.execute(sql1,(email,))
                             user = cur.fetchone()
-                            # return jsonify({"message":"user selected"})
+                            flash("sucessfully created a user",'success')
                             return jsonify({
                                             'status': 201,
                                             'data': [{"token": User.encode_auth_token(email).decode('utf-8'), "user": user[0] }]
                                         }), 201
+                        
                         return jsonify({"status":400, "error":"Failed, User already exists, Please sign In"}), 400
                     return jsonify({"status":400, "error": "Missing or wrong email format or password is less than five characters"}),400
                 return jsonify({"status":400, "error": "Firstname or Lastname should be a string"}),400
@@ -52,6 +53,58 @@ class RegisterUser(MethodView):
         return jsonify({"status":400, "error":"Content-type must be json"}),400
 
 
+    @token_required
+    def get(current_user,self): 
+        cur = conn.cursor()
+        sql = """
+            SELECT * FROM users
+        """
+        cur.execute(sql,)
+        rows = cur.fetchall()
+        all_users = []
+        if rows:
+            for row in rows:
+                user = {
+                    'user_id': row[0],
+                    'firstname':row[1],
+                    'lastname':row[2],
+                    'email':row[3],
+                    'isadmin':row[5],
+                    'registered_on':row[6]   
+                }
+                all_users.append(user)
+
+            return jsonify({"status": 200, "data":all_users}), 200
+        return jsonify({"status":404, "error":"There exists no users"}),404
+
+    @token_required   
+    def put(current_user, self, user_id):
+        """
+        Method for the update user role
+        """
+        #lets check if it is a valid id
+        try:
+            int(user_id)
+        #if we can't convert it to an integer, let's return the exception message below
+        except ValueError:
+            return jsonify({"status":400, "error" : "Please provide a valid user Id"}),400
+        
+        if 'user_status' not in request.json:
+            return jsonify({"status": 400, "error" : "wrong body format. follow this example ->> {'isadmin':'Admin Rights'}"})
+        
+        if not isinstance(request.json['user_status'], str):
+            return jsonify({"status":400, "error" : "user_status must a string"})
+
+        posted_data = request.get_json()
+        cur = conn.cursor()
+        sql2 =""" 
+            UPDATE users SET isadmin = %s WHERE user_id = %s
+        """
+        cur.execute(sql2,(posted_data['user_status'], int(user_id),))
+        conn.commit()
+        return jsonify({"status":200, "message":"Successfully updated a user role"})
+        
+        
 class LoginUser(MethodView):
     @swag_from('../docs/login.yml')
     def post(self):
@@ -89,4 +142,6 @@ class GetAuthUrls:
 
         # Add rules for the api Endpoints
         app.add_url_rule('/auth/signup', view_func=registration_view, methods=['POST', ])
+        app.add_url_rule('/users', view_func=registration_view, methods=['GET', ])
+        app.add_url_rule('/user/<user_id>/status', view_func=registration_view, methods=['PUT', ])
         app.add_url_rule('/auth/login', view_func=login_view, methods=['POST', ])

@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, make_response, jsonify
+from flask import request, make_response, jsonify, flash
 from app.models.user_model import User
 from app import conn
 import jwt
